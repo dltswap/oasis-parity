@@ -87,7 +87,7 @@ impl<'a> Visitor<'a> for BlockNumberVisitor {
 	where
 		E: Error,
 	{
-		match value {
+		match value.to_lowercase().as_str() {
 			"latest" => Ok(BlockNumber::Latest),
 			"earliest" => Ok(BlockNumber::Earliest),
 			"pending" => Ok(BlockNumber::Pending),
