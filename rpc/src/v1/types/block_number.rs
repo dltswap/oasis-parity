@@ -88,7 +88,7 @@ impl<'a> Visitor<'a> for BlockNumberVisitor {
 		E: Error,
 	{
 		match value.to_lowercase().as_str() {
-			"latest" => Ok(BlockNumber::Latest),
+			"latest"|"" => Ok(BlockNumber::Latest),
 			"earliest" => Ok(BlockNumber::Earliest),
 			"pending" => Ok(BlockNumber::Pending),
 			_ if value.starts_with("0x") => u64::from_str_radix(&value[2..], 16)
