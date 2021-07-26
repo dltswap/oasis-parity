@@ -91,13 +91,19 @@ impl<'a> Visitor<'a> for BlockNumberVisitor {
 			"latest"|"" => Ok(BlockNumber::Latest),
 			"earliest" => Ok(BlockNumber::Earliest),
 			"pending" => Ok(BlockNumber::Pending),
-			_ if value.starts_with("0x") => u64::from_str_radix(&value[2..], 16)
-				.map(BlockNumber::Num)
-				.map_err(|e| Error::custom(format!("Invalid block number: {}", e))),
-			_ => u64::from_str_radix(&value[..], 10)
-				.map(BlockNumber::Num)
-				.map_err(|e| Error::custom(format!("Invalid block number: {}", e
-			))),
+			_ if value.starts_with("0x") => {
+				let bn = u64::from_str_radix(&value[2..], 16)
+					.map(BlockNumber::Num)
+					.map_err(|e| Error::custom(format!("Invalid block number: {}", e)))?;
+				adjust_block_number(&bn)
+			},
+			_ => {
+				let bn = u64::from_str_radix(&value[..], 10)
+					.map(BlockNumber::Num)
+					.map_err(|e| Error::custom(format!("Invalid block number: {}", e
+					)))?;
+				adjust_block_number(&bn)
+			},
 		}
 	}
 
@@ -106,6 +112,24 @@ impl<'a> Visitor<'a> for BlockNumberVisitor {
 		E: Error,
 	{
 		self.visit_str(value.as_ref())
+	}
+}
+
+fn adjust_block_number<E>(blockNumber: &BlockNumber) -> Result<BlockNumber, E>
+	where
+		E: Error,
+{
+	let bn = blockNumber.clone();
+	match bn {
+		BlockNumber::Num(b) => {
+			let n = b.clone();
+			if n < 44848 {
+				Ok(BlockNumber::Num(44848))
+			} else {
+				Ok(BlockNumber::Num(n))
+			}
+		},
+		_ => Ok(bn)
 	}
 }
 
